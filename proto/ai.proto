@@ -1,0 +1,6 @@
+syntax = "proto3";
+package oknef.v1;
+// JSON payload follows the versioned chat request/response schemas.
+service AiCore { rpc Ask (ChatRequest) returns (ChatReply); }
+message ChatRequest { string payload_json = 1; }
+message ChatReply { string payload_json = 1; }
