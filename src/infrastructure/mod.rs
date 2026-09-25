@@ -104,4 +104,14 @@ impl Database {
         )
         .await
     }
+    pub async fn create_batch(&self, tenant: &str, records: &[Value]) -> AppResult<()> {
+        self.call(
+            Method::POST,
+            "/v1/records/batch",
+            Some(tenant),
+            Some(&serde_json::json!({"records":records})),
+        )
+        .await
+        .map(|_| ())
+    }
 }

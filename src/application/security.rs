@@ -78,8 +78,18 @@ fn assessment(kind: &str, content: &str, reference: Option<&str>) -> Value {
 }
 
 pub async fn create(app: &App, user: &Value, body: Value, synthetic: bool) -> AppResult<Value> {
-    let (kind, title, content, reference) = validate(&body)?;
     let evidence = super::evidence::metadata(&body)?;
+    create_with_evidence(app, user, body, evidence, synthetic).await
+}
+
+pub async fn create_with_evidence(
+    app: &App,
+    user: &Value,
+    body: Value,
+    evidence: Value,
+    synthetic: bool,
+) -> AppResult<Value> {
+    let (kind, title, content, reference) = validate(&body)?;
     let asset_ids = super::evidence::asset_ids(&body)?;
     super::evidence::owned_assets(app, user, &asset_ids).await?;
     let parent = super::evidence::parent(app, user, &body).await?;
@@ -93,16 +103,14 @@ pub async fn create(app: &App, user: &Value, body: Value, synthetic: bool) -> Ap
     let value = json!({"id":id,"kind":kind,"title":title,"content":content,"reference_text":reference,
         "created_at":now(),"updated_at":now(),"created_by":user["id"],"synthetic":synthetic || user["demo"] == true,
         "assessment":assessment,"questions":[],"evidence":evidence,"asset_ids":asset_ids,"parent_session_id":parent});
-    app.db
-        .create(records::tenant(user)?, "security_sessions", &id, &value)
-        .await?;
     let event = session_event(&value);
     app.db
-        .create(
+        .create_batch(
             records::tenant(user)?,
-            "security_events",
-            event["id"].as_str().unwrap(),
-            &event,
+            &[
+                json!({"collection":"security_sessions","id":id,"value":value}),
+                json!({"collection":"security_events","id":event["id"],"value":event}),
+            ],
         )
         .await?;
     app.event(user, event["type"].as_str().unwrap());
