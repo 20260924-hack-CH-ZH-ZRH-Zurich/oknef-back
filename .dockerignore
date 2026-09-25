@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+!.env.example
+target
+*.db
+*.db-*
+.DS_Store
+node_modules
