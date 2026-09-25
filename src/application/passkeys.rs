@@ -113,13 +113,30 @@ fn origin(app: &App, headers: &HeaderMap) -> AppResult<()> {
     Ok(())
 }
 async fn stored(app: &App, user: &Value) -> AppResult<Vec<Value>> {
+    let owner = credential_owner(app, user).await?;
     Ok(app
         .db
-        .records(records::tenant(user)?, "passkeys")
+        .records(records::tenant(&owner)?, "passkeys")
         .await?
         .into_iter()
         .filter(|record| record["user_id"] == user["id"])
         .collect())
+}
+fn same_account(user: &Value, owner: &Value) -> AppResult<()> {
+    if user["id"].as_str().is_none() || user["id"] != owner["id"] || user["email"] != owner["email"]
+    {
+        return Err(failed());
+    }
+    records::tenant(owner)?;
+    Ok(())
+}
+async fn credential_owner(app: &App, user: &Value) -> AppResult<Value> {
+    let owner = app
+        .db
+        .identity(user["email"].as_str().ok_or_else(failed)?)
+        .await?;
+    same_account(user, &owner)?;
+    Ok(owner)
 }
 fn keys(records: &[Value]) -> AppResult<Vec<Passkey>> {
     records
@@ -192,8 +209,9 @@ pub async fn register_finish(
         .map_err(|_| failed())?;
     let id = Uuid::new_v4().to_string();
     let value = json!({"id":id,"user_id":user["id"],"passkey":key,"created_at":now()});
+    let owner = credential_owner(&app, &user).await?;
     app.db
-        .save(records::tenant(&user)?, "passkeys", &id, &value)
+        .save(records::tenant(&owner)?, "passkeys", &id, &value)
         .await?;
     Ok(Json(json!({"registered":true})))
 }

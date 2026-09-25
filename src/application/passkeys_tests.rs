@@ -60,3 +60,13 @@ fn cache_sweeps_expired_challenges() {
     state.insert(json!({}), next).unwrap();
     assert!(!state.pending.lock().unwrap().contains_key(&id));
 }
+
+#[test]
+fn passkey_account_is_independent_of_active_workspace_but_not_identity() {
+    let owner = json!({"id":"account-a","email":"a@example.test","tenant_id":"personal"});
+    let active = json!({"id":"account-a","email":"a@example.test","tenant_id":"company"});
+    assert!(same_account(&active, &owner).is_ok());
+    assert!(same_account(&json!({"id":"account-b","email":"a@example.test"}), &owner).is_err());
+    assert!(same_account(&json!({"id":"account-a","email":"b@example.test"}), &owner).is_err());
+    assert!(same_account(&json!({}), &json!({})).is_err());
+}
