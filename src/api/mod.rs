@@ -2,6 +2,7 @@ pub mod agents;
 pub mod ai;
 pub mod approvals;
 pub mod auth;
+pub mod capture;
 pub mod drive;
 pub mod records;
 pub mod security;
@@ -43,6 +44,7 @@ pub fn routes() -> Router<App> {
             get(security::sessions).post(security::create),
         )
         .route("/api/security/sessions/{id}", get(security::get))
+        .route("/api/security/sessions/capture", post(capture::create))
         .route(
             "/api/security/sessions/{id}/questions",
             post(security::question),
