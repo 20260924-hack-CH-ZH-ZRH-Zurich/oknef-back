@@ -38,6 +38,7 @@ pub async fn get(app: &App, user: &Value) -> AppResult<Value> {
             for (field, relation) in [
                 ("parent_session_id", "continued_from"),
                 ("policy_id", "governed_by"),
+                ("source_session_id", "discovered_from"),
             ] {
                 if let Some(target) = value[field].as_str() {
                     candidates.push(json!({"source":id,"target":target,"relation":relation,"provenance":"stored_reference"}));

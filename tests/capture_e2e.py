@@ -104,5 +104,17 @@ check("path filename rejected", owner.capture(fields, files=(("../bad.png", "ima
 check("future capture time rejected", owner.capture(fields + [("captured_at", "18446744073709551615")])[0] == 400)
 check("invalid asset array rejected", owner.capture(fields + [("asset_ids", "not json")])[0] == 400)
 check("unsupported locale rejected", owner.capture([(key, "xx" if key == "locale" else value) for key, value in fields])[0] == 400)
+asset_body = {"name": "Confirmed document inventory", "category": "documents", "institution": "Synthetic issuer"}
+status, asset = owner.call(path + "/assets", "POST", asset_body)
+check("reviewed session promotes inventory item", status == 200 and asset["source_session_id"] == session["id"])
+check("asset keeps confirmation provenance", asset["source_provenance"] == "user_confirmed_evidence")
+check("foreign tenant cannot promote another session", stranger.call(path + "/assets", "POST", asset_body)[0] == 404)
+check("asset promotion rejects forged source", owner.call(path + "/assets", "POST", dict(asset_body, source_session_id="forged"))[0] == 400)
+check("asset promotion rejects plaintext password", owner.call(path + "/assets", "POST", dict(asset_body, password="secret"))[0] == 400)
+graph = owner.call("/api/graph")[1]
+check("topology links inventory back to source session", any(edge["source"] == asset["id"] and edge["target"] == session["id"] and edge["relation"] == "discovered_from" for edge in graph["edges"]))
+check("foreign topology excludes owner asset", all(node["id"] != asset["id"] for node in stranger.call("/api/graph")[1]["nodes"]))
+status, updated = owner.call("/api/assets/" + asset["id"], "PATCH", {"name": "Updated confirmed document"})
+check("asset editing preserves immutable source", status == 200 and updated["source_session_id"] == session["id"])
 print(json.dumps({"passed": len(checks), "failed": 0, "checks": checks,
     "scope": "Real HTTP/database capture persistence with synthetic bytes; no authenticity claim"}, indent=2))

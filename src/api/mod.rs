@@ -46,6 +46,10 @@ pub fn routes() -> Router<App> {
         .route("/api/security/sessions/{id}", get(security::get))
         .route("/api/security/sessions/capture", post(capture::create))
         .route(
+            "/api/security/sessions/{id}/assets",
+            post(security::create_asset),
+        )
+        .route(
             "/api/security/sessions/{id}/questions",
             post(security::question),
         )

@@ -4,6 +4,7 @@ pub mod chat_sessions;
 pub mod connections;
 pub mod evidence;
 mod evidence_advisor;
+pub mod evidence_assets;
 pub mod graph;
 pub mod passkeys;
 pub mod records;

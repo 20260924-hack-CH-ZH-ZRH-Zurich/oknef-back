@@ -63,13 +63,24 @@ pub fn validate_asset(body: &Value, partial: bool) -> AppResult<()> {
     Ok(())
 }
 pub async fn create_asset(app: &App, user: &Value, body: Value) -> AppResult<Value> {
+    let asset = asset_record(body)?;
+    app.db
+        .save(
+            tenant(user)?,
+            "assets",
+            asset["id"].as_str().unwrap(),
+            &asset,
+        )
+        .await
+}
+pub(crate) fn asset_record(body: Value) -> AppResult<Value> {
     validate_asset(&body, false)?;
     let id = Uuid::new_v4().to_string();
     let mut asset = json!({"id":id,"name":"","category":"other","institution":"","value":0.0,"currency":"CHF","notes":"","beneficiary":"","created_at":now(),"updated_at":now()});
     for (key, value) in body.as_object().unwrap() {
         asset[key] = value.clone();
     }
-    app.db.save(tenant(user)?, "assets", &id, &asset).await
+    Ok(asset)
 }
 pub async fn find(app: &App, user: &Value, collection: &str, id: &str) -> AppResult<Value> {
     if Uuid::parse_str(id).is_err() {

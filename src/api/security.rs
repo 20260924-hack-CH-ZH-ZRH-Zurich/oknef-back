@@ -35,6 +35,17 @@ pub async fn get(
     let user = auth::session(&app, &headers).await?;
     security::get(&app, &user, &id).await.map(Json)
 }
+pub async fn create_asset(
+    State(app): State<App>,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    Json(body): Json<Value>,
+) -> AppResult<Json<Value>> {
+    let user = auth::session(&app, &headers).await?;
+    crate::application::evidence_assets::create(&app, &user, &id, body)
+        .await
+        .map(Json)
+}
 pub async fn question(
     State(app): State<App>,
     Path(id): Path<String>,
