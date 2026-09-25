@@ -1,0 +1,104 @@
+/target
+
+# ==============================
+# ======   GITIGNORE   =========
+# ==============================
+
+# Root-level E2E harness installs @playwright/test from the root
+# package.json so the cross-repo __tests__/e2e/ai-chat/ config can
+# resolve its imports. The lockfile + node_modules + test-results are
+# local artifacts; the package.json itself is tracked.
+/node_modules
+/bun.lock
+/test-results
+
+/samples
+samples/*
+
+.DS_Store
+/.DS_Store
+.DS_Store/*
+
+/.idea
+.idea/*
+
+/.vscode
+.vscode/*
+
+.ruff_cache/
+
+
+# ==============================
+# ======   GITIGNORE   =========
+# ==============================
+
+
+# Git identity configuration (contains email addresses)
+.git-identities.conf
+
+# Ignore all .env files
+.env*
+# But don't ignore the templates
+!.env.example
+!.env.template
+!template.env
+!.env.local.example
+!.env.production.example
+!.env.deploy.example
+
+# Keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Cloud credentials
+credentials.json
+service-account*.json
+.aws/
+.gcloud/
+gha-creds-*.json
+
+# SSH credentials
+id_rsa
+id_ed25519
+*.pub.local
+
+# Wallet material
+*.mnemonic
+*.seed
+wallet.json
+keystore/
+
+# Docker Compose secret files. The Hedera operator private key is mounted from
+# ./secrets/hedera_operator_key and must never be committed.
+/secrets
+secrets/*
+
+# Runtime data (uploaded files)
+/storage
+
+# ==============================
+# ======   GITIGNORE   =========
+# ==============================
+
+tmp
+output
+
+:memory:.ses
+
+# Private local credentials, process logs and generated runtime state
+/.runtime/
+
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.staging
+target/
+*.db
+*.db-shm
+*.db-wal

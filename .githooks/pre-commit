@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+command -v gitleaks >/dev/null 2>&1 || { echo "Install gitleaks before committing." >&2; exit 1; }
+git diff --cached --check
+gitleaks git --pre-commit --staged --redact --no-banner --log-level warn .
